@@ -55,12 +55,26 @@ func main() {
 	}
 	time.Sleep(100 * time.Millisecond)
 
+	fmt.Println("--------------------------------")
 	timeoutCtx, timeoutCancel := context.WithTimeoutCause(
 		context.Background(),
 		100*time.Millisecond,
 		errors.New("timeout exceeded"),
 	)
-	defer timeoutCancel(errors.New("normal canceling"))
-	
+	defer timeoutCancel()
+
+	stop := context.AfterFunc(timeoutCtx, func() {
+		fmt.Println("cleanup resources for timeout context")
+	})
+	err = w.Do(timeoutCtx)
+	if err != nil {
+		fmt.Println("error occurred:", err)
+		fmt.Println("error cause: ", context.Cause(timeoutCtx))
+		fmt.Println("could stop cleaning up?", stop())
+	} else {
+		fmt.Println("work completed successfully")
+		fmt.Println("could stop cleaning up?", stop())
+	}
+	time.Sleep(100 * time.Millisecond)
 
 }
