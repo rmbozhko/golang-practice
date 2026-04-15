@@ -2,23 +2,15 @@ package main_test
 
 import (
 	"fmt"
-	main "practice/pipelines/ex_04"
+	main "practice/time/ex_17"
 	"runtime/pprof"
 	"strings"
 	"testing"
 	"time"
 )
 
-// func TestSyncTest(t *testing.T) {
-// 	synctest.Test(t, func(t *testing.T) {
-// 		main.RunGenerator()
-// 		synctest.Wait()
-// 	})
-// }
-
-// run with -v flag to see the output about leaked goroutines
 func TestPrintLeaks(t *testing.T) {
-	printLeaks(main.RunGenerator)
+	printLeaks(main.RunQueue)
 }
 
 func printLeaks(f func()) {

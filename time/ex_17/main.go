@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"math/rand/v2"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -37,6 +38,8 @@ func NewQueue(ctx context.Context, capacity int) *Queue {
 
 func (q *Queue) TryEnqueue(task Task) bool {
 	select {
+	case <-q.ctx.Done():
+		return false
 	case q.tasks <- task:
 		return true
 	default:
@@ -64,7 +67,7 @@ func (q *Queue) Close() {
 	close(q.tasks)
 }
 
-func main() {
+func RunQueue() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	queue := NewQueue(ctx, 2)
@@ -87,6 +90,11 @@ func main() {
 			log.Printf("Processing task %d\n", task.ID)
 			processed_tasks.Add(1)
 			time.Sleep(50 * time.Millisecond)
+			if rand.IntN(10) == 2 {
+				cancel() // Simulate worker stopping randomly.
+				log.Println("Simulating worker stop")
+				break
+			}
 		}
 	}()
 
@@ -102,7 +110,14 @@ func main() {
 
 	queue.Close()
 
+	res := queue.TryEnqueue(Task{ID: 42})
+	log.Printf("Enqueuing task %d, %v\n", 42, res)
+
 	wg.Wait()
 
 	log.Printf("Processed tasks: %d, Dropped tasks: %d\n", processed_tasks.Load(), dropped_tasks.Load())
+}
+
+func main() {
+	RunQueue()
 }

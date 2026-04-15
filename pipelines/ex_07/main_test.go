@@ -2,7 +2,7 @@ package main_test
 
 import (
 	"fmt"
-	main "practice/ex_07"
+	main "practice/pipelines/ex_07"
 	"runtime/pprof"
 	"strings"
 	"testing"

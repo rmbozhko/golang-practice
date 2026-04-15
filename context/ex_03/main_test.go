@@ -2,23 +2,34 @@ package main_test
 
 import (
 	"fmt"
-	main "practice/pipelines/ex_04"
+	main "practice/context/ex_03"
+	"runtime"
 	"runtime/pprof"
 	"strings"
 	"testing"
 	"time"
 )
 
-// func TestSyncTest(t *testing.T) {
-// 	synctest.Test(t, func(t *testing.T) {
-// 		main.RunGenerator()
-// 		synctest.Wait()
-// 	})
-// }
+func measure(fn func()) {
+	var m runtime.MemStats
 
-// run with -v flag to see the output about leaked goroutines
+	runtime.GC()
+	runtime.ReadMemStats(&m)
+	allocBefore, mallocsBefore := m.TotalAlloc, m.Mallocs
+
+	fn()
+
+	runtime.GC()
+	runtime.ReadMemStats(&m)
+	allocAfter, mallocsAfter := m.TotalAlloc, m.Mallocs
+
+	alloc := allocAfter - allocBefore
+	mallocs := mallocsAfter - mallocsBefore
+	fmt.Printf("Memory used: %d KB, # allocations: %d\n", alloc/1024, mallocs)
+}
+
 func TestPrintLeaks(t *testing.T) {
-	printLeaks(main.RunGenerator)
+	printLeaks(main.GeneratorCancel)
 }
 
 func printLeaks(f func()) {
@@ -37,5 +48,5 @@ func printLeaks(f func()) {
 		}
 	}()
 
-	f()
+	measure(f)
 }
